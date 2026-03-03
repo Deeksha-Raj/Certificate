@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fest Management Assistant</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #eef2f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 450px;
+            height: 650px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #1e3c72;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            padding: 10px 14px;
+            margin: 8px 0;
+            border-radius: 20px;
+            max-width: 75%;
+            white-space: pre-line;
+            font-size: 14px;
+        }
+
+        .bot {
+            background: #e3f2fd;
+            align-self: flex-start;
+        }
+
+        .user {
+            background: #1e3c72;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .suggestions {
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* FIXED DARK VISIBLE BUTTONS */
+        .suggestion-btn {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .suggestion-btn:hover {
+            background: #16325c;
+        }
+
+        .chat-footer {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            background: #1e3c72;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+
+    <div class="chat-header">
+        🎉 Fest Management Assistant
+    </div>
+
+    <div class="chat-body" id="chatBody"></div>
+
+    <div class="suggestions" id="suggestions"></div>
+
+    <div class="chat-footer">
+        <input type="text" id="userInput" placeholder="Ask about fest...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+<script>
+
+    const chatBody = document.getElementById("chatBody");
+    const suggestionsDiv = document.getElementById("suggestions");
+
+    const festData = {
+        events: ["Coding Challenge", "Dance Battle", "Project Expo"],
+        schedule: {
+            "Coding Challenge": "March 20",
+            "Dance Battle": "March 21",
+            "Project Expo": "March 22"
+        }
+    };
+
+    window.onload = () => {
+        botReply("Hello 👋 Welcome to Fest Assistant!\nAsk about events, rules, coordinator, fees, registration or schedule.");
+        showSuggestions(["Show Events", "Coding Rules", "Coordinator", "Register"]);
+    };
+
+    function addMessage(text, sender) {
+        const msg = document.createElement("div");
+        msg.classList.add("message", sender);
+        msg.innerText = text;
+        chatBody.appendChild(msg);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function botReply(text) {
+        addMessage(text, "bot");
+    }
+
+    function sendMessage(textFromButton = null) {
+        const input = document.getElementById("userInput");
+        const userText = textFromButton || input.value.trim();
+        if (!userText) return;
+
+        addMessage(userText, "user");
+        input.value = "";
+
+        setTimeout(() => {
+            const response = detectIntent(userText);
+            botReply(response);
+        }, 400);
+    }
+
+    /* ---------------- TYPO CORRECTION ---------------- */
+
+    function correctTypos(message) {
+
+        const corrections = {
+            "codng": "coding",
+            "codding": "coding",
+            "danc": "dance",
+            "exop": "expo",
+            "regster": "register",
+            "co ordinator": "coordinator",
+            "schedul": "schedule"
+        };
+
+        let words = message.split(" ");
+
+        words = words.map(word => {
+            return corrections[word] || word;
+        });
+
+        return words.join(" ");
+    }
+
+    /* ---------------- SMART INTENT DETECTION ---------------- */
+
+    function detectIntent(message) {
+
+        message = correctTypos(message.toLowerCase());
+
+        const eventMap = {
+            "coding": "Coding Challenge",
+            "dance": "Dance Battle",
+            "expo": "Project Expo"
+        };
+
+        // Coordinator
+        if (message.includes("coordinator")) {
+            return "Fest Coordinator:\nMr. Arun S\nEmail: fest@college.edu\nContact: 9876543210";
+        }
+
+        // Rules
+        if (message.includes("rule")) {
+            for (let key in eventMap) {
+                if (message.includes(key)) {
+                    return `${eventMap[key]} Rules:\n1. Individual participation\n2. Time limit: 2 hours\n3. No malpractice\n4. Judges decision is final`;
+                }
+            }
+            return "Please mention which event rules you need (Coding, Dance, Expo).";
+        }
+
+        // Specific Event Info
+        for (let key in eventMap) {
+            if (message.includes(key)) {
+                return `${eventMap[key]} is scheduled on ${festData.schedule[eventMap[key]]}. Registration fee: ₹200.`;
+            }
+        }
+
+        // Event list
+        if (message.match(/event|list|show/)) {
+            return "Fest Events:\n• " + festData.events.join("\n• ");
+        }
+
+        // Fees
+        if (message.match(/fee|cost|price/)) {
+            return "Event fees range from ₹100 to ₹200 depending on the event.";
+        }
+
+        // Registration
+        if (message.match(/register|join|participate/)) {
+            return "To register, visit the Fest Website and complete the online registration form with payment.";
+        }
+
+        // Schedule
+        if (message.match(/schedule|date|when/)) {
+            return showSchedule();
+        }
+
+        return "Sorry, I didn’t understand that.\nTry asking about events, rules, coordinator, registration or fees.";
+    }
+
+    function showSchedule() {
+        let text = "Fest Schedule:\n";
+        for (let event in festData.schedule) {
+            text += `• ${event} - ${festData.schedule[event]}\n`;
+        }
+        return text;
+    }
+
+    /* ---------------- SMART SUGGESTIONS ---------------- */
+
+    function showSuggestions(list) {
+        suggestionsDiv.innerHTML = "";
+        list.forEach(text => {
+            const btn = document.createElement("button");
+            btn.innerText = text;
+            btn.classList.add("suggestion-btn");
+            btn.onclick = () => sendMessage(text);
+            suggestionsDiv.appendChild(btn);
+        });
+    }
+
+    document.getElementById("userInput")
+        .addEventListener("keypress", function(e) {
+            if (e.key === "Enter") sendMessage();
+        });
+
+</script>
+
+</body>
+</html>
