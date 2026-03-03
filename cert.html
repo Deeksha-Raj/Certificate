@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Distinction Certificate System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #eef2f7;
+            text-align: center;
+        }
+
+        .controls {
+            margin: 20px;
+        }
+
+        input, select, button {
+            padding: 8px;
+            margin: 6px;
+        }
+
+        /* ================= PARTICIPATION DESIGN ================= */
+
+        .participation {
+            width: 850px;
+            height: 500px;
+            margin: 30px auto;
+            padding: 50px;
+            background: white;
+            border: 4px solid #2c3e50;
+            text-align: center;
+        }
+
+        .participation h1 {
+            font-size: 26px;
+            letter-spacing: 2px;
+        }
+
+        .participation .name {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .simple-footer {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 80px;
+        }
+
+        /* ================= WINNER DESIGN ================= */
+
+        .winner {
+            width: 900px;
+            height: 550px;
+            margin: 30px auto;
+            padding: 40px;
+            background: #fffdf7;
+            border: 10px double gold;
+            position: relative;
+        }
+
+        .winner-header {
+            background: linear-gradient(to right, #b8860b, gold);
+            color: white;
+            padding: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .trophy {
+            font-size: 40px;
+            margin: 10px 0;
+        }
+
+        .winner .name {
+            font-size: 34px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #b8860b;
+        }
+
+        .winner-footer {
+            position: absolute;
+            bottom: 40px;
+            width: 85%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+    </style>
+</head>
+<body>
+
+<h2>Professional Certificate Generator</h2>
+
+<div class="controls">
+    <input type="text" id="eventName" placeholder="Event Name">
+    <input type="date" id="eventDate">
+    <select id="type">
+        <option value="participation">Participation</option>
+        <option value="winner">Winner</option>
+    </select>
+    <button onclick="generateCertificates()">Generate</button>
+</div>
+
+<div id="output"></div>
+
+<script>
+    const participants = [
+        { name: "Arshad Pasha", rank: 2 },
+        { name: "Mohammed Arsh", rank: 3 },
+        { name: "Deeksha Raj M N", rank: 1 },
+        { name: "Dhanushree S", rank: 0 }
+    ];
+
+    function generateCertificates() {
+
+        const event = document.getElementById("eventName").value;
+        const date = document.getElementById("eventDate").value;
+        const type = document.getElementById("type").value;
+        const output = document.getElementById("output");
+
+        output.innerHTML = "";
+
+        participants.forEach(person => {
+
+            if (type === "winner" && person.rank === 0) return;
+
+            let div = document.createElement("div");
+
+            if (type === "participation") {
+
+                div.classList.add("participation");
+
+                div.innerHTML = `
+                    <h1>CERTIFICATE OF PARTICIPATION</h1>
+                    <p>This is to certify that</p>
+                    <div class="name">${person.name}</div>
+                    <p>has actively participated in</p>
+                    <h3>${event}</h3>
+                    <p>conducted on ${date}</p>
+
+                    <div class="simple-footer">
+                        <div>Fest Coordinator</div>
+                        <div>Head of Department</div>
+                    </div>
+                `;
+
+            } else {
+
+                div.classList.add("winner");
+
+                div.innerHTML = `
+                    <div class="winner-header">
+                        CERTIFICATE OF ACHIEVEMENT
+                    </div>
+
+                    <div class="trophy">🏆</div>
+
+                    <p>This is proudly presented to</p>
+                    <div class="name">${person.name}</div>
+                    <p>for securing</p>
+                    <h2>${getRank(person.rank)}</h2>
+                    <p>in the event <b>${event}</b></p>
+                    <p>held on ${date}</p>
+
+                    <div class="winner-footer">
+                        <div>Fest Coordinator</div>
+                        <div>Head of Department</div>
+                        <div>Principal</div>
+                    </div>
+                `;
+            }
+
+            output.appendChild(div);
+        });
+    }
+
+    function getRank(rank) {
+        if (rank === 1) return "1st Place";
+        if (rank === 2) return "2nd Place";
+        if (rank === 3) return "3rd Place";
+        return "";
+    }
+</script>
+
+</body>
+</html>
